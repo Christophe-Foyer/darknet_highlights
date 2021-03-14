@@ -48,15 +48,14 @@ setup(
         'Programming Language :: Python',
     ],
     keywords='',
-    packages=find_packages(exclude=['docs', 'media', 'examples']),
+    packages=find_packages(exclude=['docs']),
     python_requires='>=3.6',
     install_requires=[
         'numpy >= 1',
+        'tqdm >= 1',
         'opencv >= 4',
-        'plotly >= 4',
         'pandas >= 1',
-        'matplotlib >= 3',
-        'seaborn >= 0.10',
+        'filetype >= 1'
     ],
     include_package_data=True,
     package_data={
