@@ -81,7 +81,6 @@ class Maui63DataProcessor:
         self.uav_df = df
         
     def _merge_uav_cv_datasets(self):
-        pass
     
         # TODO: do not assume equal start times
         df = copy.deepcopy(self.uav_df)
@@ -265,7 +264,8 @@ class Maui63DataProcessor:
         pass
     
     def export_csv(self):
-        assert self.csv_output_path != None
+        assert self.csv_output_path != None, \
+            'Please specify csv_output_path attribute or at init.'
         
         self.data.write_csv(self.csv_output_path)
         
