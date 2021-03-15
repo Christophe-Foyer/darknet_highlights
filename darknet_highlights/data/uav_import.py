@@ -12,17 +12,21 @@ from tqdm import tqdm
 class Maui63UAVImporter:
     
     def __init__(self,
-                 logfile: str, 
-                 dateformat: str = "%Y.%m.%d %H.%M.%S ",
-                 delimiter: str = ','
+                 logfile: str = None, 
+                 # delimiter: str = ',',
+                 # cv_dateformat: str = "%Y.%m.%d %H.%M.%S ",
+                 cv_logfile: str = None,
                  ):
         
         print('Importing logs:')
         time.sleep(0.5)
         
-        df = self._import_cv_logs(logfile)
+        if logfile != None:
+            self.df = pd.read_csv(logfile)
         
-        self.df = df
+        # if we'd like the cv logs imported (not sure why but I've coded it already)
+        if cv_logfile != None:
+            self.cv_df = self._import_cv_logs(cv_logfile)
         
         
     def _import_cv_logs(self, logfile):
@@ -82,6 +86,7 @@ class Maui63UAVVideoImporter(Maui63UAVImporter):
     def __init__(self,
                  video: Union[VideoClip, str],  # Moviepy clip
                  logfile: str, 
+                 **kwargs,
                  ):
         
         assert isinstance(video, VideoClip) or isinstance(video, str), \
@@ -92,7 +97,8 @@ class Maui63UAVVideoImporter(Maui63UAVImporter):
         elif isinstance(video, str):
             self.video = VideoFileClip(video)
             
-        super().__init__(logfile)
+        super().__init__(logfile, **kwargs,)
+        
         
 if __name__ == '__main__':
     log = '../../../drone_Xavier_log_27.01.2021.txt'
