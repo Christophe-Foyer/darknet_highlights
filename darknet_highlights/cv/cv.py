@@ -5,6 +5,24 @@ import numpy as np
 import pandas as pd
 
 
+def add_bbox(frame, idxs, boxes, confidences, classIDs, COLORS, LABELS):
+    # ensure at least one detection exists
+    if len(idxs) > 0:
+        # loop over the indexes we are keeping
+        for i in idxs.flatten():
+            # extract the bounding box coordinates
+            (x, y) = (boxes[i][0], boxes[i][1])
+            (w, h) = (boxes[i][2], boxes[i][3])
+            # draw a bounding box rectangle and label on the frame
+            color = [int(c) for c in COLORS[classIDs[i]]]
+            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+            text = "{}: {:.4f}".format(LABELS[classIDs[i]],
+                confidences[i])
+            cv2.putText(frame, text, (x, y - 5),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            
+    return frame
+
 def process_video(video: str, 
                   data_file: str, 
                   config_file: str, 
@@ -72,20 +90,8 @@ def process_video(video: str,
             COLORS,
             LABELS)
         
-        # ensure at least one detection exists
-        if len(idxs) > 0:
-            # loop over the indexes we are keeping
-            for i in idxs.flatten():
-                # extract the bounding box coordinates
-                (x, y) = (boxes[i][0], boxes[i][1])
-                (w, h) = (boxes[i][2], boxes[i][3])
-                # draw a bounding box rectangle and label on the frame
-                color = [int(c) for c in COLORS[classIDs[i]]]
-                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-                text = "{}: {:.4f}".format(LABELS[classIDs[i]],
-                    confidences[i])
-                cv2.putText(frame, text, (x, y - 5),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        frame = add_bbox(frame, idxs, boxes, confidences,
+                         classIDs, COLORS, LABELS)        
         
         # check if the video writer is None
         if writer is None and output_file != None:
@@ -150,6 +156,8 @@ def process_image(image: str,
         W, H,
         COLORS,
         LABELS)
+    
+    frame = add_bbox(frame, idxs, boxes, confidences, classIDs, COLORS, LABELS)
     
     if output_file != None:
         cv2.imwrite(output_file, frame)
