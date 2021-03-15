@@ -28,6 +28,7 @@ class Maui63DataProcessor:
                  weights, 
                  names_file,
                  output_path = '__temp__.data_out',
+                 csv_output_path = None,
                  tag_media = True,  # add boxes
                  highlighter_kwargs = {},
                  ):
@@ -41,6 +42,7 @@ class Maui63DataProcessor:
         self.output_path = output_path
         self.tag_media = tag_media
         self.highlighter_kwargs = highlighter_kwargs  # TODO: clarify
+        self.csv_output_path = csv_output_path
         
         self._media_type, self._media_extension = self._get_filetype()
         assert self._media_type in ['image', 'video', 'dir']
@@ -261,6 +263,15 @@ class Maui63DataProcessor:
             self.data = pd.read_csv(directory + data_df_csv)
         
         pass
+    
+    def export_csv(self):
+        assert self.csv_output_path != None
+        
+        self.data.write_csv(self.csv_output_path)
+        
+    def export_web(self):
+        raise NotImplementedError()
+        
     
 if __name__ == '__main__':
     
