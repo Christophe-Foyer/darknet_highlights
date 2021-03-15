@@ -62,4 +62,9 @@ setup(
     },
     project_urls={  # Optional
     },
+    entry_points={
+    # 'console_scripts': [
+    #         'darknet_highlights_to_csv=darknet_highlights.command_line.file_output:main',
+    #         ],
+    }
 )
