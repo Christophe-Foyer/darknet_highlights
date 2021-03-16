@@ -19,8 +19,7 @@ class Maui63UAVImporter:
                  ):
         
         if logfile != None:
-            print('Importing logs:')
-            time.sleep(0.5)
+            print('Importing logs...')
             self.df = pd.read_csv(logfile)
         
         # if we'd like the cv logs imported (not sure why but I've coded it already)

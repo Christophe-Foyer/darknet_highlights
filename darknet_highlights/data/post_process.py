@@ -18,6 +18,7 @@ import copy
 import numpy as np
 import datetime
 import scipy
+import scipy.interpolate
 
 class Maui63DataProcessor:
     
@@ -89,7 +90,7 @@ class Maui63DataProcessor:
         df = copy.deepcopy(self.uav_df)
         
         # TODO: assuming video and logs are synced at the beginning for now
-        df['timestamp'] = df['unix_time'] - df['unix_time'].min()
+        df['timestamp'] = df['uav_unix_time'] - df['uav_unix_time'].min()
         
         # create linear interpolators based on log data
         data_cols = list(df.columns)
@@ -221,10 +222,11 @@ class Maui63DataProcessor:
         
     def process(self):
         
+        # Import log data
+        self._import_data()
+        
         # Todo: ask to rerun if self.dnn_df exists
         self._run_cv()
-        
-        self._import_data()
         
         if self._media_type == 'video':
             if self._output_extension == '':
@@ -296,7 +298,8 @@ class Maui63DataProcessor:
     
 if __name__ == '__main__':
     
-    logs = '../../../drone_Xavier_log_27.01.2021.txt'
+    # logs = '../../../drone_Xavier_log_27.01.2021.txt'
+    logs = '../../../Drone_Flight_Path_Dummy_Data.csv'
     
     media = '../../../testingvideos/mauitest_11_40s_1080.mp4'
     data_file = '../../../maui_sf_and_100m.data'
