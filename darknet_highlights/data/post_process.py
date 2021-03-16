@@ -17,6 +17,7 @@ import time
 import copy
 import numpy as np
 import datetime
+import scipy
 
 class Maui63DataProcessor:
     
@@ -27,7 +28,7 @@ class Maui63DataProcessor:
                  config_file, 
                  weights, 
                  names_file,
-                 output_path = '__temp__.data_out',
+                 output_path = 'data_out',
                  csv_output_path = None,
                  tag_media = True,  # add boxes
                  highlighter_kwargs = {},
@@ -74,8 +75,10 @@ class Maui63DataProcessor:
     def _import_data(self):
         self.importer = Maui63UAVImporter(self.logs)
         
+        # make a copy of the data
         df = copy.deepcopy(self.importer.df)
         
+        # add a prefix to the columns
         df.rename(columns = {x:('uav_'+x) for x in df.columns}, inplace = True) 
         
         self.uav_df = df
@@ -85,8 +88,24 @@ class Maui63DataProcessor:
         # TODO: do not assume equal start times
         df = copy.deepcopy(self.uav_df)
         
-        df['timestamp'] = (df.datetime - df.datetime.min()).apply(
-            lambda x: x / datetime.timedelta(microseconds=1) / 1E6)
+        # TODO: assuming video and logs are synced at the beginning for now
+        df['timestamp'] = df['unix_time'] - df['unix_time'].min()
+        
+        # create linear interpolators based on log data
+        data_cols = list(df.columns)
+        data_cols.remove('timestamp')
+        interpolators = {}
+        x = df.timestamp
+        for column in data_cols:
+            y = df[column]
+            interpolators[column] = scipy.interpolate.interp1d(x, y)
+            
+        self._interpolators = interpolators
+        
+        # Now put it in with interpolation
+        x = self.data.timestamp
+        for column in data_cols:
+            self.data[column] = interpolators[column](x)
         
     def _generate_video_highlights(self, df_in = None):
         self.highlighter = Highlighter(self._video_temp_file,
@@ -213,6 +232,8 @@ class Maui63DataProcessor:
                 df = self._generate_video_highlights(df_in = self.dnn_df)
         
         self.data = df
+        
+        self._merge_uav_cv_datasets()
         
         return df
 
