@@ -18,10 +18,9 @@ class Maui63UAVImporter:
                  cv_logfile: str = None,
                  ):
         
-        print('Importing logs:')
-        time.sleep(0.5)
-        
         if logfile != None:
+            print('Importing logs:')
+            time.sleep(0.5)
             self.df = pd.read_csv(logfile)
         
         # if we'd like the cv logs imported (not sure why but I've coded it already)
@@ -30,6 +29,9 @@ class Maui63UAVImporter:
         
         
     def _import_cv_logs(self, logfile):
+        
+        print('Importing cv logs:')
+        time.sleep(0.5)
         
         lines = []
         f = open(logfile, "r")
@@ -42,7 +44,7 @@ class Maui63UAVImporter:
         	#you can access the line
         	lines.append(line.strip())
             
-        columns = ['datetime', 'num', 'prob', 'lat', 'lon']
+        columns = ['datetime_utc', 'num', 'prob', 'lat', 'lon']
         df = pd.DataFrame(columns = columns)
         
         startidx = 2  # start at prob
@@ -54,6 +56,7 @@ class Maui63UAVImporter:
             out = [None] * len(columns)
             
             out[0] = datetime.datetime.strptime(values[0].strip(), "%Y.%m.%d %H.%M.%S")
+            out[0] = out[0].replace(tzinfo=datetime.timezone.utc).timestamp()
             
             num = [x.strip() for x in values[1].split('=')]
             assert num[0].lower() == 'num'
@@ -103,4 +106,4 @@ class Maui63UAVVideoImporter(Maui63UAVImporter):
 if __name__ == '__main__':
     log = '../../../drone_Xavier_log_27.01.2021.txt'
     
-    importer = Maui63UAVImporter(log)
+    importer = Maui63UAVImporter()
