@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 
 
+#TODO: Make this module into a class?
+
 def add_bbox(frame, idxs, boxes, confidences, classIDs, COLORS, LABELS):
     # ensure at least one detection exists
     if len(idxs) > 0:
@@ -238,7 +240,7 @@ def run_net_on_frame(frame,
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
     
     return frame, idxs, boxes, confidences, classIDs
-    
+
 
 if __name__ == '__main__':
     video = '../../../testingvideos/mauitest_11_40s_1080.mp4'

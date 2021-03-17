@@ -1,0 +1,3 @@
+unix_time, GPS Date, GPS time, height of UAV, UAV lat, UAV long, Wind speed
+10.5, 16, 16, 100, 10, -10, 1000
+100.76, 16, 17, 200, 20, -50, 1
