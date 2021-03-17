@@ -29,10 +29,13 @@ class Maui63DataProcessor:
                  config_file, 
                  weights, 
                  names_file,
-                 output_path = 'data_out',
+                 output_path = '__temp__',
                  csv_output_path = None,
                  tag_media = True,  # add boxes
                  highlighter_kwargs = {},
+                 media_start_time = None,
+                 image_dir_fps = None,
+                 image_dir_timestamps = None,
                  ):
         
         self.logs = str(logs)
@@ -45,6 +48,12 @@ class Maui63DataProcessor:
         self.tag_media = tag_media
         self.highlighter_kwargs = highlighter_kwargs  # TODO: clarify
         self.csv_output_path = str(csv_output_path)
+        self.media_start_time = media_start_time
+        
+        # Make sure we don't have both
+        assert image_dir_fps == None or image_dir_timestamps == None
+        self.image_dir_fps = image_dir_fps
+        self.image_dir_timestamps = image_dir_timestamps
         
         self._media_type, self._media_extension = self._get_filetype()
         assert self._media_type in ['image', 'video', 'dir']
@@ -119,7 +128,10 @@ class Maui63DataProcessor:
         df = copy.deepcopy(self.uav_df)
         
         # TODO: assuming video and logs are synced at the beginning for now
-        df['timestamp'] = df['uav_unix_time'] - df['uav_unix_time'].min()
+        if self.media_start_time == None:
+            self.media_start_time = df['uav_unix_time'].min()
+            
+        df['timestamp'] = df['uav_unix_time'] - self.media_start_time
         
         # create linear interpolators based on log data
         data_cols = list(df.columns)
@@ -220,11 +232,15 @@ class Maui63DataProcessor:
                                output_file = file)
             
             df['filename'] = file
+            df['timestamp'] = 0
             
         if self._media_type == 'dir':
+            if self.image_dir_fps != None:
+                fps = self.image_dir_fps
+            
             df = pd.DataFrame()
             output_dir = self.output_path.rstrip('/') + '/' # just to make sure it has a slash
-            for filename in tqdm(os.listdir(self.media)):
+            for i, filename in tqdm(enumerate(os.listdir(self.media))):
                 f_type, _ = self._get_filetype(filename, check = False)
                 if f_type == 'image':
                     if self.tag_media:
@@ -240,14 +256,22 @@ class Maui63DataProcessor:
                                        output_file = file)
                     
                     df['filename'] = file
+                    
+                    if self.image_dir_fps != None:
+                        df['timestamp'] = fps*i
+                        
                     series = df.squeeze()
                     df.append(series, ignore_index=True)
                 else:
                     warnings.warn('Non-media file in media directory ({}), skipping...'.format(filename))
                     continue
     
+        if self.image_dir_timestamps != None:
+            df['timestamp'] = self.image_dir_timestamps
+            
         self.dnn_df = df
-        
+        return df
+    
         
     def process(self):
         
@@ -255,15 +279,18 @@ class Maui63DataProcessor:
         self._import_data()
         
         # Todo: ask to rerun if self.dnn_df exists
-        self._run_cv()
+        df = self._run_cv()
         
         if self._media_type == 'video':
             if self._output_extension == '':
                 # generate some highlights from the tempfile
-                df = self._generate_video_highlights(df_in = self.dnn_df)
+                df = self._generate_video_highlights(df_in = df)
         
         self.data = df
         
+        # TODO: f
+        
+        # Now merge the datasets
         self._merge_uav_cv_datasets()
         
         return df

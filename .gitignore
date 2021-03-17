@@ -127,6 +127,8 @@ dmypy.json
 # Temp files
 __temp__.*
 __tmp__.*
+__temp__/
+__tmp__/
 
 # Syncthing
 *.sync-conflict*
