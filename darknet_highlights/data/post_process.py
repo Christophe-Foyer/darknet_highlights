@@ -35,25 +35,34 @@ class Maui63DataProcessor:
                  highlighter_kwargs = {},
                  ):
         
-        self.logs = logs
-        self.media = media
-        self.data_file = data_file
-        self.config_file = config_file
-        self.weights = weights
-        self.names_file = names_file
-        self.output_path = output_path
+        self.logs = str(logs)
+        self.media = str(media)
+        self.data_file = str(data_file)
+        self.config_file = str(config_file)
+        self.weights = str(weights)
+        self.names_file = str(names_file)
+        self.output_path = str(output_path)
         self.tag_media = tag_media
         self.highlighter_kwargs = highlighter_kwargs  # TODO: clarify
-        self.csv_output_path = csv_output_path
+        self.csv_output_path = str(csv_output_path)
         
         self._media_type, self._media_extension = self._get_filetype()
         assert self._media_type in ['image', 'video', 'dir']
         
         # Might not exist yet so use os
-        _, self._output_extension = os.path.splitext(output_path)
-        assert self._output_extension == self._media_extension or \
-            (self._output_extension == '' and self._media_type == 'video'), \
-            "Input and output types must match (or dir for video highlights)"
+        # self._output_extension = os.path.splitext(output_path)[1].lstrip('.')
+        # assert self._output_extension == self._media_extension or \
+        #     (self._output_extension == '' and self._media_type == 'video'), \
+        #     "Input and output types must match (or dir for video highlights)" \
+        #     + '\n\nOutput_extension = {} | Media_extension = {}'.format(
+        #         self._output_extension, self._media_extension)
+        
+        self._output_type, self._output_extension = self._get_filetype(output_path)
+        assert self._media_type == self._output_type or \
+             (self._output_extension == '' and self._media_type == 'video'), \
+            "Input and output types must match (or dir for video highlights)" \
+            + '\n\nOutput_type = {} | Media_type = {}'.format(
+                self._output_type, self._media_type)
         
     def _get_filetype(self, file=None):
         """
@@ -69,6 +78,26 @@ class Maui63DataProcessor:
             mime = kind.mime.split('/')
         except IsADirectoryError:
             mime = ['dir', '']
+        except FileNotFoundError:
+            # Manually find the type
+            extension = os.path.splitext(file)[1].lstrip('.')
+            if extension == '':
+                mime = ['dir', '']
+            else:
+                for ftype in filetype.types:
+                    fmime = ftype.mime.split('/')
+                    if fmime[1] == extension:
+                        mime = fmime
+                        break
+                    elif fmime[1] == 'jpeg' and extension == 'jpg':
+                        mime = fmime
+                        mime[1] = 'jpg'
+                        break
+           
+        # TODO: fix this so it works with both, quick fix to match both
+        # media_extension = os.path.splitext(self.media)[1].lstrip('.')
+        # if mime[1] == 'jpeg' and media_extension == 'jpg':
+        #     mime[1] = 'jpg'
             
         return mime[0], mime[1]
         
