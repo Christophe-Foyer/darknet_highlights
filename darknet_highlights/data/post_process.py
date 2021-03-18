@@ -38,6 +38,9 @@ class Maui63DataProcessor:
                  image_dir_timestamps = None,
                  ):
         
+        if csv_output_path is not None:
+            csv_output_path = str(csv_output_path)
+        
         self.logs = str(logs)
         self.media = str(media)
         self.data_file = str(data_file)
@@ -47,7 +50,7 @@ class Maui63DataProcessor:
         self.output_path = str(output_path)
         self.tag_media = tag_media
         self.highlighter_kwargs = highlighter_kwargs  # TODO: clarify
-        self.csv_output_path = str(csv_output_path)
+        self.csv_output_path = csv_output_path
         self.media_start_time = media_start_time
         
         # Make sure we don't have both
@@ -81,6 +84,7 @@ class Maui63DataProcessor:
         
         if file is None:
             file = self.media
+        file = str(file)
         
         try:
             kind = filetype.guess(file)
@@ -342,11 +346,17 @@ class Maui63DataProcessor:
         
         pass
     
-    def export_csv(self):
-        assert self.csv_output_path != None, \
-            'Please specify csv_output_path attribute or at init.'
+    def export_csv(self, csv_output_path = None):
         
-        self.data.write_csv(self.csv_output_path)
+        if csv_output_path == None:
+            csv_output_path = self.csv_output_path
+        
+        assert csv_output_path != None, \
+            'Please specify csv_output_path.'
+            
+        print("Exporting data to {}".format(csv_output_path))
+        
+        self.data.to_csv(self.csv_output_path)
         
     def export_web(self):
         raise NotImplementedError()
