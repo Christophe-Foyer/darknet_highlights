@@ -1,5 +1,5 @@
 from pathlib import Path
-from darknet_highlights.data.post_process import Maui63DataProcessor 
+from darknet_highlights import Maui63DataProcessor 
 
 logs = Path(__file__).parent / '../tests/test_data/test_post_processing/Drone_Flight_Path_Dummy_Data.csv'
 
