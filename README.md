@@ -36,5 +36,5 @@ processor.export_csv(csv_output_path)
 ## TODO
 - Fix padding for start/end clips when creating highlights.
 - Push data to R/Vision
-- Object tracking?
-- Speed up opencv processing? (currently ~3 fps on a GTX 960m)
+- Speed up opencv processing (currently ~3 fps on a GTX 960m)
+- Object Tracking?
