@@ -4,6 +4,15 @@ The following library processes Maui63's output data by running their darknet mo
 
 _____
 
+## Installation
+
+From the root directory, use pip to install the library:
+'''
+pip install .
+'''
+
+## Usage
+
 The media file(s) are automatically be tagged and objects be added to a 
 pandas dataframe.
 
