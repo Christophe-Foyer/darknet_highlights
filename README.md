@@ -7,9 +7,10 @@ _____
 ## Installation
 
 From the root directory, use pip to install the library:
-'''
+
+```
 pip install .
-'''
+```
 
 ## Usage
 
