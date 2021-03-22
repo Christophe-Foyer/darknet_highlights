@@ -12,6 +12,8 @@ From the root directory, run:
 pip install .
 ```
 
+The example and test files assume the darknet files are in the repository's parent directory.
+
 ## Usage
 
 The media file(s) are automatically be tagged and objects be added to a 
