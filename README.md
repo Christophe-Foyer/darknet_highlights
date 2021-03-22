@@ -6,7 +6,7 @@ _____
 
 ## Installation
 
-From the root directory, use pip to install the library:
+From the root directory, run:
 
 ```
 pip install .
