@@ -12,7 +12,7 @@ From the root directory, run:
 pip install .
 ```
 
-The example and test files assume the darknet files are in the repository's parent directory.
+Note: The example and test files assume the darknet files are in the repository's parent directory.
 
 ## Usage
 
