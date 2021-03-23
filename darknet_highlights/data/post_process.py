@@ -33,6 +33,7 @@ class Maui63DataProcessor:
                  csv_output_path = None,
                  tag_media = True,  # add boxes
                  highlighter_kwargs = {},
+                 cv_kwargs = {},
                  media_start_time = None,
                  image_dir_fps = None,
                  image_dir_timestamps = None,
@@ -49,7 +50,8 @@ class Maui63DataProcessor:
         self.names_file = str(names_file)
         self.output_path = str(output_path)
         self.tag_media = tag_media
-        self.highlighter_kwargs = highlighter_kwargs  # TODO: clarify
+        self.highlighter_kwargs = highlighter_kwargs  # TODO: document
+        self.cv_kwargs = cv_kwargs                    # TODO: document
         self.csv_output_path = csv_output_path
         self.media_start_time = media_start_time
         
@@ -58,17 +60,11 @@ class Maui63DataProcessor:
         self.image_dir_fps = image_dir_fps
         self.image_dir_timestamps = image_dir_timestamps
         
+        # Get media filetype
         self._media_type, self._media_extension = self._get_filetype()
         assert self._media_type in ['image', 'video', 'dir']
         
-        # Might not exist yet so use os
-        # self._output_extension = os.path.splitext(output_path)[1].lstrip('.')
-        # assert self._output_extension == self._media_extension or \
-        #     (self._output_extension == '' and self._media_type == 'video'), \
-        #     "Input and output types must match (or dir for video highlights)" \
-        #     + '\n\nOutput_extension = {} | Media_extension = {}'.format(
-        #         self._output_extension, self._media_extension)
-        
+        # Check output type makes sense
         self._output_type, self._output_extension = self._get_filetype(output_path)
         assert self._media_type == self._output_type or \
              (self._output_extension == '' and self._media_type == 'video'), \
@@ -217,7 +213,8 @@ class Maui63DataProcessor:
                                self.config_file,
                                self.weights,
                                self.names_file,
-                               output_file = file)
+                               output_file = file,
+                               **self.cv_kwargs)
             
             df.filename = file
             
@@ -233,7 +230,8 @@ class Maui63DataProcessor:
                                self.config_file,
                                self.weights,
                                self.names_file,
-                               output_file = file)
+                               output_file = file,
+                               **self.cv_kwargs)
             
             df['filename'] = file
             df['timestamp'] = 0
@@ -257,7 +255,8 @@ class Maui63DataProcessor:
                                        self.config_file,
                                        self.weights,
                                        self.names_file,
-                                       output_file = file)
+                                       output_file = file,
+                                       **self.cv_kwargs)
                     
                     df['filename'] = file
                     
