@@ -16,7 +16,7 @@ Note: The example and test files assume the darknet files are in the repository'
 
 ## Usage
 
-The media file(s) are automatically be tagged and objects be added to a 
+The media file(s) are automatically tagged and objects added to a 
 pandas dataframe.
 
 In the case of a video input, if a directory is specified as an output, 
