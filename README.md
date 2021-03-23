@@ -1,10 +1,22 @@
 # Darknet Highlights & Post-Processing - Maui63
 
-The following library processes Maui63's output data by running their darknet model on media files and combining the output with UAV logs.
+The following library processes [Maui63](http://maui63.org/)'s output data by running their darknet model on media files and combining the output with UAV logs.
 
 _____
 
-The media file(s) are automatically be tagged and objects be added to a 
+## Installation
+
+From the root directory, run:
+
+```
+pip install .
+```
+
+Note: The example and test files assume the darknet files are in the repository's parent directory.
+
+## Usage
+
+The media file(s) are automatically tagged and objects added to a 
 pandas dataframe.
 
 In the case of a video input, if a directory is specified as an output, 
@@ -36,5 +48,5 @@ processor.export_csv(csv_output_path)
 ## TODO
 - Fix padding for start/end clips when creating highlights.
 - Push data to R/Vision
-- Object tracking?
-- Speed up opencv processing? (currently ~3 fps on a GTX 960m)
+- Speed up opencv processing (currently ~3 fps on a GTX 960m)
+- Object Tracking?
