@@ -1,6 +1,6 @@
 # Darknet Highlights & Post-Processing - Maui63
 
-The following library processes Maui63's output data by running their darknet model on media files and combining the output with UAV logs.
+The following library processes [Maui63](http://maui63.org/)'s output data by running their darknet model on media files and combining the output with UAV logs.
 
 _____
 
