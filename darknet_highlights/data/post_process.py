@@ -2,11 +2,13 @@ from __future__ import annotations
 from typing import Union
 
 from darknet_highlights.data.uav_import import Maui63UAVImporter
-# from darknet_highlights.data.export import Maui63UAVExporters
 from darknet_highlights.videoedit.highlights import Highlighter
 from darknet_highlights.cv import process_video, process_image
+
 import os
 import shutil
+import requests
+import json
 import pandas as pd
 import tempfile
 import filetype  # This might be unnecessary
@@ -15,8 +17,6 @@ from tqdm import tqdm
 import warnings
 import time
 import copy
-import numpy as np
-import datetime
 import scipy
 import scipy.interpolate
 
@@ -37,6 +37,7 @@ class Maui63DataProcessor:
                  media_start_time = None,
                  image_dir_fps = None,
                  image_dir_timestamps = None,
+                 export_type: str = 'video'
                  ):
         
         if csv_output_path is not None:
@@ -71,6 +72,11 @@ class Maui63DataProcessor:
             "Input and output types must match (or dir for video highlights)" \
             + '\n\nOutput_type = {} | Media_type = {}'.format(
                 self._output_type, self._media_type)
+            
+        if export_type != None:
+            assert self._output_type == 'dir'
+            assert export_type in ['video', 'image']
+            self.export_type = export_type
         
     def _get_filetype(self, file=None):
         """
@@ -186,6 +192,8 @@ class Maui63DataProcessor:
         
         return df
     
+    def _generate_detection_frames(self):
+        pass
         
     def _run_cv(self):
         
@@ -284,14 +292,16 @@ class Maui63DataProcessor:
         # Todo: ask to rerun if self.dnn_df exists
         df = self._run_cv()
         
-        if self._media_type == 'video':
-            if self._output_extension == '':
+        if self._media_type == 'video' and self._output_extension == '':
+            if self.export_type == 'video':
                 # generate some highlights from the tempfile
                 df = self._generate_video_highlights(df_in = df)
+            if self.export_type == 'image':
+                raise NotImplementedError()
+                
+                self._generate_detection_frames()
         
         self.data = df
-        
-        # TODO: f
         
         # Now merge the datasets
         self._merge_uav_cv_datasets()
@@ -357,8 +367,75 @@ class Maui63DataProcessor:
         
         self.data.to_csv(self.csv_output_path)
         
-    def export_web(self):
+    
+    def export_rvision(self):
         raise NotImplementedError()
+        
+        # Upload images for each detection (or nth detection)
+        
+        """
+        Example of JSON:
+        
+            {
+                "model": -2, // -3 is Person, -2 is Dolphin
+                "detections": [
+                           {
+                                "bb": {
+                                   "b": 1080, 
+                                   "l": 0, 
+                                   "r": 1080, 
+                                   "t": 1920
+                                },
+                                "object_class": 0,
+                                "confidence": 90
+                           } 
+                ],
+                "lat": -36.850030,
+                "lng": 174.778300
+            }
+        """
+        
+        data_to_send = self.data
+        
+        for i, row in tqdm(data_to_send.iterrows()):
+            # TODO: Decide whether frame should be sent or not
+            
+            detections = []
+            for idx in range(row.num_objects):
+                bbox = row.box[idx]
+                
+                detections.append({
+                        "bb": {
+                                       "b": bbox[0], 
+                                       "l": bbox[1], 
+                                       "r": bbox[2], 
+                                       "t": bbox[3]
+                        },
+                        "object_class": row.name[idx],
+                        "confidence": row.confidence[idx]
+                    })
+            
+            data_dict = {
+                "model": -2, # Dolphins
+                "detections": detections,
+                "lat": row.uav_lat,
+                "lng": row.uav_lon
+                }
+            
+            image_path = row.filename
+            data_json = json.dumps(data_dict)
+            
+            self._send_rvision_frame(image_path, data_json)
+            
+    # TODO: Fix this? not hardcoded?
+    rvision_url = "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera_token>"
+    def _send_rvision_frame(self, image_path, json):
+        url = self.rvision_url
+        with open(image_path, 'rb') as image:
+            requests.post(url, files={
+                    'image': image,
+                    'json': json
+                })
         
     
 if __name__ == '__main__':
