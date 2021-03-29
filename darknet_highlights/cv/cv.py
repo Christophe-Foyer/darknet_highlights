@@ -60,7 +60,7 @@ def process_video(video: str,
     output_layers = [layer_names[i[0]-1] for i in net.getUnconnectedOutLayers()]
     
     df = pd.DataFrame(columns = ['timestamp', 'num_objects',
-                                 'prob', 'name', 'box'])
+                                 'confidence', 'object_class', 'box'])
     
     count = 0
     for framenum in tqdm(range(framecount)):
@@ -113,8 +113,8 @@ def process_video(video: str,
             frame_info = {
                 'timestamp': frametime,
                 'num_objects': len(idxs),
-                'prob': confidences,
-                'name': classIDs,
+                'confidence': confidences,
+                'object_class': classIDs,
                 'box': boxes,
                 }
             series = pd.Series(frame_info)
