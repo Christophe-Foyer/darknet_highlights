@@ -146,8 +146,27 @@ class Maui63DataProcessor:
         x = df.timestamp
         for column in data_cols:
             y = df[column]
-            interpolators[column] = scipy.interpolate.interp1d(x, y)
             
+            if y.dtype.kind in 'biufc':
+                interpolators[column] = scipy.interpolate.interp1d(x, y)
+            
+            else:
+                # if column is non-numeric interp1d(kind='nearest')
+                # https://stackoverflow.com/questions/62015823/interpolating-categorical-data-in-python-nearest-previous-value
+                
+                def interp_f_factory():
+                    def interp_f(x):
+                        f = scipy.interpolate.interp1d(
+                            x, range(len(y)), kind='nearest',
+                            fill_value=(0, len(y)-1), bounds_error=False
+                            )            
+                        y_idx = f(x)
+                        y_new = [y[int(i)] for i in y_idx]
+                        return y_new
+                    return interp_f
+                
+                interpolators[column] = interp_f_factory()
+                
         self._interpolators = interpolators
         
         # Now put it in with interpolation
