@@ -337,50 +337,64 @@ class Maui63DataProcessor:
 
     
     # in case you don't want to rerun the opencv code
-    def _save_temp_output(self, directory = './',
+    def _save_temp_output(self,
+                          data_df_csv = '__temp__.csv',
                           dnn_df_csv = '__temp__.df_dnn.csv',
                           video_name = '__temp__.video_dnn',  # Only if _video_temp_file is defined
-                          data_df_csv = None,
                           ):
         """
         A debug function for saving important data to reload later
         """
         
         # make sure there's a trailing slash
-        directory = directory.rstrip('/') + '/'
         
-        print('Exporting dnn data...')
-        self.dnn_df.to_csv(directory + dnn_df_csv.rstrip('.csv') + '.csv')
+        if dnn_df_csv != None:
+            print('Exporting dnn data...')
+            self.dnn_df.to_csv(dnn_df_csv.rstrip('.csv') + '.csv')
         
         print('Moving video data...')
         if hasattr(self, '_video_temp_file'):
             shutil.copyfile(self._video_temp_file, 
-                            directory + video_name + self._media_extension)
+                            video_name + self._media_extension)
             
         if data_df_csv != None:
-            self.data.to_csv(directory + data_df_csv)
+            self.data.to_csv(data_df_csv)
             
         print('Done')
         
     def _load_processed_data(self,
-                             directory = './',
-                             dnn_df_csv = '__temp__.df_dnn.csv',
+                             data_df_csv = "__temp__.csv",
+                             dnn_df_csv = None,
                              video_name = None,  # Only if _video_temp_file is defined
-                             data_df_csv = None,
                              ):
         """
         A debug function for reloading data outputs saved prior
         """
         
-        self.df_dnn = pd.read_csv(directory + dnn_df_csv)
+        print("WARNING: This method uses eval to convert strings")
+        print("         Do no use with non-trusted datasets")
+        input("press ENTER to continue, ctrl+C to cancel")
+        
+        colums_to_eval = ['box', 'confidence', 'object_class']
+        
+        if dnn_df_csv != None:
+            self.df_dnn = pd.read_csv(dnn_df_csv)
+            
+            for col in colums_to_eval:
+                if col in self.df_dnn.columns:
+                    self.df_dnn[col] = self.df_dnn[col].apply(lambda x: eval(x))
         
         if video_name != None:
-            self._video_temp_file = directory + video_name
+            self._video_temp_file = video_name
         
         if data_df_csv != None:
-            self.data = pd.read_csv(directory + data_df_csv)
+            self.data = pd.read_csv(data_df_csv)
+            
+            for col in colums_to_eval:
+                if col in self.data.columns:
+                    self.data[col] = self.data[col].apply(lambda x: eval(x))
         
-        pass
+        
     
     def export_csv(self, csv_output_path = None):
         
@@ -390,9 +404,11 @@ class Maui63DataProcessor:
         assert csv_output_path != None, \
             'Please specify csv_output_path.'
             
-        print("Exporting data to {}".format(csv_output_path))
+        path = os.getcwd()
+            
+        print("Exporting data to {}".format(path + '/' + csv_output_path))
         
-        self.data.to_csv(self.csv_output_path)
+        self.data.to_csv(path + '/' + self.csv_output_path)
         
     rvision_url = "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera_token>"
     def export_rvision(self,
@@ -422,6 +438,7 @@ class Maui63DataProcessor:
         
         data_to_send = data_to_send.iloc[idx]
         
+        time.sleep(0.2)
         print('Uploading frames:')
         time.sleep(0.2)
         for i in tqdm(range(len(data_to_send))):
@@ -457,6 +474,7 @@ class Maui63DataProcessor:
             
     def _send_frame(self, url, image, json):
         
+        # Create a temporary file to then upload
         image_path = tempfile.NamedTemporaryFile(
             suffix='.png').name
         
@@ -492,4 +510,6 @@ if __name__ == '__main__':
         highlighter_kwargs = highlighter_kwargs
         )
     
-    pro.process()
+    # pro.process()
+    pro._load_processed_data(data_df_csv = '../../examples/__temp__.csv')
+    pro.export_rvision('12345678910')

@@ -22,7 +22,7 @@ config_file = str(input("Cfg file path (leave empty for default path): ") or con
 weights = str(input("Weights file path (leave empty for default path): ") or weights)
 names_file = str(input("Names file path (leave empty for default path): ") or names_file)
 output_path = str(input("Output path (leave empty for default path): ") or '__temp__')
-csv_output_path = str(input("CSV output path (leave empty for default path): ") or '__temp__.csv')
+csv_output_path = str(input("CSV output path (leave empty for default path): ") or Path(__file__).parent / '__temp__.csv')
 
 # Make sure there are inputs
 assert logs; assert video; assert data_file; assert config_file
