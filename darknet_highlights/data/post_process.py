@@ -19,6 +19,8 @@ import time
 import copy
 import scipy
 import scipy.interpolate
+from moviepy.editor import  VideoFileClip
+from tqdm import tqdm
 
 class Maui63DataProcessor:
     
@@ -37,7 +39,7 @@ class Maui63DataProcessor:
                  media_start_time = None,
                  image_dir_fps = None,
                  image_dir_timestamps = None,
-                 export_type: str = 'video'
+                 export_type: str = 'video',
                  ):
         
         if csv_output_path is not None:
@@ -211,8 +213,16 @@ class Maui63DataProcessor:
         
         return df
     
-    def _generate_detection_frames(self):
-        pass
+    def _get_detection_frame(self, timestamp):
+        # To avoid creating a clip object for just one frame
+        if not hasattr(self, '_media_clip'):
+            self._media_clip = VideoFileClip(self.media)
+        clip = self._media_clip
+        
+        # Simply get them from the original file
+        frame = clip.get_frame(timestamp)
+        
+        return frame
         
     def _run_cv(self):
         
@@ -317,8 +327,6 @@ class Maui63DataProcessor:
                 df = self._generate_video_highlights(df_in = df)
             if self.export_type == 'image':
                 raise NotImplementedError()
-                
-                self._generate_detection_frames()
         
         self.data = df
         
@@ -386,38 +394,17 @@ class Maui63DataProcessor:
         
         self.data.to_csv(self.csv_output_path)
         
-    
-    def export_rvision(self):
-        raise NotImplementedError()
+    rvision_url = "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera_token>"
+    def export_rvision(self, rvision_token):
+        assert type(rvision_token) == str
+        url = self.rvision_url.replace('<camera_token>', rvision_token)
         
-        # Upload images for each detection (or nth detection)
+        # Upload images for each detection (or nth detection)    
+        data_to_send = copy.deepcopy(self.data)
         
-        """
-        Example of JSON:
-        
-            {
-                "model": -2, // -3 is Person, -2 is Dolphin
-                "detections": [
-                           {
-                                "bb": {
-                                   "b": 1080, 
-                                   "l": 0, 
-                                   "r": 1080, 
-                                   "t": 1920
-                                },
-                                "object_class": 0,
-                                "confidence": 90
-                           } 
-                ],
-                "lat": -36.850030,
-                "lng": 174.778300
-            }
-        """
-        
-        data_to_send = self.data
-        
-        for i, row in tqdm(data_to_send.iterrows()):
+        for i in tqdm(range(len(data_to_send))):
             # TODO: Decide whether frame should be sent or not
+            row = data_to_send.iloc[i]
             
             detections = []
             for idx in range(row.num_objects):
@@ -425,36 +412,32 @@ class Maui63DataProcessor:
                 
                 detections.append({
                         "bb": {
-                                       "b": bbox[0], 
-                                       "l": bbox[1], 
-                                       "r": bbox[2], 
-                                       "t": bbox[3]
+                                       "b": int(bbox[0]), 
+                                       "l": int(bbox[1]), 
+                                       "r": int(bbox[2]), 
+                                       "t": int(bbox[3])
                         },
-                        "object_class": row.name[idx],
-                        "confidence": row.confidence[idx]
+                        "object_class": int(row.object_class[idx]),
+                        "confidence": float(row.confidence[idx])
                     })
             
             data_dict = {
                 "model": -2, # Dolphins
                 "detections": detections,
-                "lat": row.uav_lat,
-                "lng": row.uav_lon
+                "lat": float(row['uav_ UAV lat']),  # TODO: Fix this column
+                "lng": float(row['uav_ UAV long'])
                 }
             
-            image_path = row.filename
+            image = self._get_detection_frame(row.timestamp)
             data_json = json.dumps(data_dict)
             
-            self._send_rvision_frame(image_path, data_json)
+            self._send_frame(url ,image, data_json)
             
-    # TODO: Fix this? not hardcoded?
-    rvision_url = "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera_token>"
-    def _send_rvision_frame(self, image_path, json):
-        url = self.rvision_url
-        with open(image_path, 'rb') as image:
-            requests.post(url, files={
-                    'image': image,
-                    'json': json
-                })
+    def _send_frame(self, url, image, json):
+        requests.post(url, files={
+                'image': image,
+                'json': json
+            })
         
     
 if __name__ == '__main__':
