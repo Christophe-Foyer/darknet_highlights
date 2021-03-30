@@ -20,7 +20,6 @@ import copy
 import scipy
 import scipy.interpolate
 from moviepy.editor import  VideoFileClip
-from tqdm import tqdm
 
 class Maui63DataProcessor:
     
@@ -395,15 +394,36 @@ class Maui63DataProcessor:
         self.data.to_csv(self.csv_output_path)
         
     rvision_url = "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera_token>"
-    def export_rvision(self, rvision_token):
-        assert type(rvision_token) == str
-        url = self.rvision_url.replace('<camera_token>', rvision_token)
+    def export_rvision(self,
+                       rvision_token,       # <camera token>
+                       min_spacing = 30,    # Minimum spacing in seconds
+                       ):
+        
+        url = self.rvision_url.replace('<camera_token>', str(rvision_token))
         
         # Upload images for each detection (or nth detection)    
         data_to_send = copy.deepcopy(self.data)
         
+        # Filter events that are too close to each other
+        print("Finding spaced frames:")
+        time.sleep(0.2)
+        
+        data_to_send = data_to_send.sort_values('timestamp')
+        last_timestamp = data_to_send['timestamp'].min()
+        idx = [0]  # Should be 0 since it's sorted
+        
         for i in tqdm(range(len(data_to_send))):
-            # TODO: Decide whether frame should be sent or not
+            row = data_to_send.iloc[i]
+            
+            if row.timestamp >= last_timestamp + min_spacing:
+                last_timestamp = row.timestamp
+                idx.append(i)
+        
+        data_to_send = data_to_send.iloc[idx]
+        
+        print('Uploading frames:')
+        time.sleep(0.2)
+        for i in tqdm(range(len(data_to_send))):
             row = data_to_send.iloc[i]
             
             detections = []
