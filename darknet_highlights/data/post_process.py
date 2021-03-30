@@ -20,6 +20,7 @@ import copy
 import scipy
 import scipy.interpolate
 from moviepy.editor import  VideoFileClip
+import cv2
 
 class Maui63DataProcessor:
     
@@ -449,15 +450,23 @@ class Maui63DataProcessor:
                 }
             
             image = self._get_detection_frame(row.timestamp)
+            
             data_json = json.dumps(data_dict)
             
             self._send_frame(url ,image, data_json)
             
     def _send_frame(self, url, image, json):
-        requests.post(url, files={
-                'image': image,
-                'json': json
-            })
+        
+        image_path = tempfile.NamedTemporaryFile(
+            suffix='.png').name
+        
+        cv2.imwrite(image_path, image)
+        
+        with open(image_path, 'rb') as image:
+            requests.post(url, files={
+                    'image': image,
+                    'json': json
+                })
         
     
 if __name__ == '__main__':
