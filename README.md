@@ -45,7 +45,7 @@ To export the dataframe to a csv file:
 processor.export_csv(csv_output_path)
 ```
 
-To export the data to [rvision](https://rvision.rush.co.nz/)
+To export the data to [rvision](https://rvision.rush.co.nz/):
 ```python
 # export data with a minimum spacing of 30s between frames
 processor.export_rvision(camera_token, min_spacing=30)
