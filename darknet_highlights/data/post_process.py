@@ -412,8 +412,8 @@ class Maui63DataProcessor:
         
     rvision_url = "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera_token>"
     def export_rvision(self,
-                       rvision_token,       # <camera token>
-                       min_spacing = 30,    # Minimum spacing in seconds
+                       rvision_token: str,       # <camera token>
+                       min_spacing: float = 30,    # Minimum spacing in seconds
                        ):
         
         url = self.rvision_url.replace('<camera_token>', str(rvision_token))
@@ -481,10 +481,16 @@ class Maui63DataProcessor:
         cv2.imwrite(image_path, image)
         
         with open(image_path, 'rb') as image:
-            requests.post(url, files={
+            response = requests.post(
+                url,
+                files={
                     'image': image,
                     'json': json
-                })
+                }
+            )
+            
+            assert response.status_code != 404, \
+                "Error 404: Not Found\nPlease check your rvision camera token."
         
     
 if __name__ == '__main__':
