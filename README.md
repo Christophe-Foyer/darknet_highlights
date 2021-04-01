@@ -50,6 +50,10 @@ To export the data to [rvision](https://rvision.rush.co.nz/):
 # export data with a minimum spacing of 30s between frames
 processor.export_rvision(camera_token, min_spacing=30)
 ```
+*Note: the script posts to "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera_token>", if this is not the correct url either contact me to change it in the source code or simply change the url:
+```python
+processor.rvision_url = "https://domain.name/path/to/ressource/<camera_token>"
+```
 
 ## TODO
 - Fix padding for start/end clips when creating highlights.
