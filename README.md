@@ -6,7 +6,13 @@ _____
 
 ## Installation
 
-From the root directory, run:
+To install the package, simply run:
+
+```
+pip install git+https://github.com/Christophe-Foyer/darknet_highlights.git
+```
+
+Or if you cloned the repo, from the root directory, run:
 
 ```
 pip install .
