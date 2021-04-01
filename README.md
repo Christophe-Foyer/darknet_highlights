@@ -60,3 +60,4 @@ processor.rvision_url = "https://domain.name/path/to/ressource/<camera_token>"
 - Push data to R/Vision
 - Speed up opencv processing (currently ~3 fps on a GTX 960m)
 - Object Tracking?
+- Upload video clips to rvision (waiting for API)
