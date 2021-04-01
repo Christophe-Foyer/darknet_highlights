@@ -57,7 +57,6 @@ processor.rvision_url = "https://domain.name/path/to/ressource/<camera_token>"
 
 ## TODO
 - Fix padding for start/end clips when creating highlights.
-- Push data to R/Vision
-- Speed up opencv processing (currently ~3 fps on a GTX 960m)
-- Object Tracking?
+- ~~Push data to R/Vision~~
+- Speed up opencv processing? (currently ~3 fps on a GTX 960m, might just be my GPU)
 - Upload video clips to rvision (waiting for API)
