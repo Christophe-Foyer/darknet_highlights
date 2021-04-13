@@ -1,9 +1,9 @@
 from __future__ import annotations
 from typing import Union
 
-from darknet_highlights.data.uav_import import Maui63UAVImporter
-from darknet_highlights.videoedit.highlights import Highlighter
-from darknet_highlights.cv import process_video, process_image
+from maui63_postprocessing.data.uav_import import Maui63UAVImporter
+from maui63_postprocessing.videoedit.highlights import Highlighter
+from maui63_postprocessing.cv import process_video, process_image
 
 import os
 import shutil
@@ -352,7 +352,7 @@ class Maui63DataProcessor:
             print('Exporting dnn data...')
             self.dnn_df.to_csv(dnn_df_csv.rstrip('.csv') + '.csv')
         
-        print('Moving video data...')
+        print('Moving video data...') 
         if hasattr(self, '_video_temp_file'):
             shutil.copyfile(self._video_temp_file, 
                             video_name + self._media_extension)

@@ -35,9 +35,9 @@ def get_version(rel_path):
 
 ### Do the setup
 setup(
-    name='darknet_highlights',
+    name='maui63_postprocessing',
     author='Christophe Foyer',
-    version=get_version("darknet_highlights/__init__.py"),
+    version=get_version("maui63_postprocessing/__init__.py"),
     description='A Python 3 package for generating highlights from darknet videos for Maui63',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -64,7 +64,7 @@ setup(
     },
     entry_points={
     # 'console_scripts': [
-    #         'darknet_highlights_to_csv=darknet_highlights.command_line.file_output:main',
+    #         'maui63_postprocessing_to_csv=maui63_postprocessing.command_line.file_output:main',
     #         ],
     }
 )

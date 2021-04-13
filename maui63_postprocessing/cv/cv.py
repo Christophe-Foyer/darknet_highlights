@@ -47,6 +47,7 @@ def process_video(video: str,
     time.sleep(0.5)
     
     net = cv2.dnn.readNetFromDarknet(config_file, weights)
+    
     net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     

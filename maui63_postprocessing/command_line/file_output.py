@@ -1,4 +1,4 @@
-from darknet_highlights.data.post_process import Maui63DataProcessor
+from maui63_postprocessing.data.post_process import Maui63DataProcessor
 import argparse
 
 def main(*args):

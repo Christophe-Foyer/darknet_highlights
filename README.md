@@ -9,7 +9,7 @@ _____
 To install the package, simply run:
 
 ```
-pip install git+https://github.com/Christophe-Foyer/darknet_highlights.git
+pip install git+https://github.com/Christophe-Foyer/maui63_postprocessing.git
 ```
 
 Or if you cloned the repo, from the root directory, run:
@@ -30,7 +30,7 @@ highlights will also be generated (see examples for highlighter args).
 
 To create a data processing instance and run it:
 ```python
-from darknet_highlights import Maui63DataProcessor 
+from maui63_postprocessing import Maui63DataProcessor 
 
 processor = Maui63DataProcessor(
         uav_logs,       # CSV file for UAV data logs

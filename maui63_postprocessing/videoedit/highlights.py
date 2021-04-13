@@ -112,7 +112,7 @@ class Highlighter:
 
 if __name__ == '__main__':
     
-    from darknet_highlights.cv import process_video 
+    from maui63_postprocessing.cv import process_video 
     
     video = '../../../testingvideos/mauitest_11_40s_1080.mp4'
     data_file = '../../../maui_sf_and_100m.data'
