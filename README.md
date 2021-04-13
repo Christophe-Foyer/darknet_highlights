@@ -20,6 +20,15 @@ pip install .
 
 Note: The example and test files assume the darknet files are in the repository's parent directory.
 
+
+## TODO
+
+- Add option for object data format as independent columns for each object (instead of lists inside columns)
+- Upload video clips to rvision (waiting for API)
+- Fix padding for start/end clips when creating highlights.
+- ~~Push data to R/Vision~~
+- Speed up opencv processing? (currently ~3 fps on a GTX 960m, might just be my GPU)
+
 ## Usage
 
 The media file(s) are automatically tagged and objects added to a 
@@ -60,9 +69,3 @@ processor.export_rvision(camera_token, min_spacing=30)
 ```python
 processor.rvision_url = "https://domain.name/path/to/ressource/<camera_token>"
 ```
-
-## TODO
-- Fix padding for start/end clips when creating highlights.
-- ~~Push data to R/Vision~~
-- Speed up opencv processing? (currently ~3 fps on a GTX 960m, might just be my GPU)
-- Upload video clips to rvision (waiting for API)
