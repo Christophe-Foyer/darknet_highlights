@@ -23,8 +23,9 @@ Note: The example and test files assume the darknet files are in the repository'
 
 ## TODO
 
-- Add option for object data format as independent columns for each object (instead of lists inside columns)
 - Upload video clips to rvision (waiting for API)
+- Improve upload performance (asyncio or threads)
+- Add option for object data format as independent columns for each object (instead of lists inside columns)
 - Fix padding for start/end clips when creating highlights.
 - ~~Push data to R/Vision~~
 - Speed up opencv processing? (currently ~3 fps on a GTX 960m, might just be my GPU)
