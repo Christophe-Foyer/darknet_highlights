@@ -65,4 +65,4 @@ To export the data to [rvision](https://rvision.rush.co.nz/):
 # export data with a minimum spacing of 30s between frames
 processor.export_rvision(post_url, min_spacing=30)
 ```
-The format is "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera>/analyse-image/?token=<camera_token>"
+The format is "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<_camera_>/analyse-image/?token=<camera_token>"
