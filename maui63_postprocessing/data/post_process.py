@@ -410,13 +410,23 @@ class Maui63DataProcessor:
         
         self.data.to_csv(path + '/' + self.csv_output_path)
         
-    rvision_url = "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera_token>"
+    
+    rvision_url = "https://be.uat.rvision.rush.co.nz/api/v1/alpr/camera/<camera>/analyse-image/?token=<camera_token>"
     def export_rvision(self,
-                       rvision_token: str,       # <camera token>
+                       url: str = None,
+                       rvision_camera: str = None,
+                       rvision_token: str = None,       # <camera token>
                        min_spacing: float = 30,    # Minimum spacing in seconds
                        ):
         
-        url = self.rvision_url.replace('<camera_token>', str(rvision_token))
+        assert ((rvision_camera != None and rvision_token != None) or
+                url != None), "Please specify the camera and token, or provide the full URL"
+        
+        # TODO: Add warnings if you add multiple
+        
+        if url == None:
+            url = self.rvision_url.replace('<camera_token>', str(rvision_token))
+            url = url.replace('<camera>', str(rvision_camera))
         
         # Upload images for each detection (or nth detection)    
         data_to_send = copy.deepcopy(self.data)
@@ -472,7 +482,7 @@ class Maui63DataProcessor:
             
             self._send_frame(url ,image, data_json)
             
-    def _send_frame(self, url, image, json):
+    def _send_frame(self, url, image, data_json):
         
         # Create a temporary file to then upload
         image_path = tempfile.NamedTemporaryFile(
@@ -485,13 +495,15 @@ class Maui63DataProcessor:
                 url,
                 files={
                     'image': image,
-                    'json': json
+                    'json': data_json
                 }
             )
             
             assert response.status_code != 404, \
                 "Error 404: Not Found\nPlease check your rvision camera token."
         
+            assert response.status_code == 200, \
+                "Recieved status code {}, expected status code 200 (OK)".format(response.status_code)
     
 if __name__ == '__main__':
     
@@ -518,4 +530,5 @@ if __name__ == '__main__':
     
     # pro.process()
     pro._load_processed_data(data_df_csv = '../../examples/__temp__.csv')
-    pro.export_rvision('12345678910')
+    url = input('Rvision URL: ')
+    pro.export_rvision(url = url)
