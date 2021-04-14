@@ -458,15 +458,18 @@ class Maui63DataProcessor:
             for idx in range(row.num_objects):
                 bbox = row.box[idx]
                 
+                (x, y) = (int(bbox[0]), int(bbox[1]))
+                (w, h) = (int(bbox[2]), int(bbox[3]))
+                
                 detections.append({
-                        "bb": {
-                                       "b": int(bbox[0]), 
-                                       "l": int(bbox[1]), 
-                                       "r": int(bbox[2]), 
-                                       "t": int(bbox[3])
+                        "bb": {  
+                                       "b": y, 
+                                       "l": x, 
+                                       "r": x + w, 
+                                       "t": y + h
                         },
                         "object_class": int(row.object_class[idx]),
-                        "confidence": float(row.confidence[idx])
+                        "confidence": float(row.confidence[idx])*100
                     })
             
             data_dict = {
