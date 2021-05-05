@@ -3,9 +3,21 @@ from tqdm import tqdm
 import time
 import numpy as np
 import pandas as pd
-
+import re
+import warnings
 
 #TODO: Make this module into a class?
+def set_backend(net):
+    
+    cv_info = [re.sub('\s+', ' ', ci.strip()) for ci in cv2.getBuildInformation().strip().split('\n') 
+               if len(ci) > 0 and re.search(r'(nvidia*:?)|(cuda*:)|(cudnn*:)', ci.lower()) is not None]
+    cv_info = {x.split(':')[0]:x.split(':')[1].strip() for x in cv_info}
+    
+    if "YES" in cv_info['NVIDIA CUDA'] and "YES" in cv_info['cuDNN']:
+        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    else:
+        warnings.warn("CUDA/cuDNN not detected, running with default opencv backend.")
 
 def add_bbox(frame, idxs, boxes, confidences, classIDs, COLORS, LABELS):
     # ensure at least one detection exists
@@ -48,8 +60,7 @@ def process_video(video: str,
     
     net = cv2.dnn.readNetFromDarknet(config_file, weights)
     
-    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    set_backend(net)
     
     LABELS = open(names_file).read().strip().split("\n")
     COLORS = np.random.randint(0, 255, size=(len(LABELS), 3))
@@ -138,8 +149,8 @@ def process_image(image: str,
     frame = cv2.imread(image) 
     
     net = cv2.dnn.readNetFromDarknet(config_file, weights)
-    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    
+    set_backend(net)
     
     LABELS = open(names_file).read().strip().split("\n")
     COLORS = np.random.randint(0, 255, size=(len(LABELS), 3))
