@@ -75,8 +75,9 @@ class Maui63DataProcessor:
             + '\n\nOutput_type = {} | Media_type = {}'.format(
                 self._output_type, self._media_type)
             
+        # For exporting to rvision
         if export_type != None:
-            assert self._output_type == 'dir'
+            # assert self._output_type == 'dir'
             assert export_type in ['video', 'image']
             self.export_type = export_type
         
