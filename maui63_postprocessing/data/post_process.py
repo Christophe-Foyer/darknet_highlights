@@ -215,13 +215,19 @@ class Maui63DataProcessor:
         return df
     
     def _get_detection_frame(self, timestamp):
-        # To avoid creating a clip object for just one frame
-        if not hasattr(self, '_media_clip'):
-            self._media_clip = VideoFileClip(self.media)
-        clip = self._media_clip
         
-        # Simply get them from the original file
-        frame = clip.get_frame(timestamp)
+        if self._media_type == "video":
+            # To avoid creating a clip object for just one frame
+            if not hasattr(self, '_media_clip'):
+                self._media_clip = VideoFileClip(self.media)
+            clip = self._media_clip
+            
+            # Simply get them from the original file
+            frame = clip.get_frame(timestamp)
+
+        else:
+            # Doesn't support directories or single images yet
+            raise NotImplementedError("Directories and images not yet supported, please use video as input media.")
         
         return frame
         
