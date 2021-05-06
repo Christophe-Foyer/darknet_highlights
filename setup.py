@@ -55,7 +55,8 @@ setup(
         'tqdm >= 1',
         'opencv >= 4',
         'pandas >= 1',
-        'filetype >= 1'
+        'filetype >= 1',
+        'flask >= 1.0.0'
     ],
     include_package_data=True,
     package_data={

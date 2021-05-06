@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Maui63 Post-Processing Tool</title>
+    </head>
+    
+    <body>
+        <h1>Maui63 Post-Processing Tool</h1>
+        
+        {% block body %}
+		{% endblock %}
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <ul class="flashes">
+                {% for message in messages %}
+                 <div class="message_flash">{{ message }}</div>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        {% endwith %}
+        
+    </body>
+</html>
+

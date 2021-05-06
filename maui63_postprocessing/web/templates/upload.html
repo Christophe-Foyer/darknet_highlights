@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block body %}
+<p>Upload the video file and uav logs. The processed data will then be uploaded to rvision.</p>
+
+<form method=post enctype=multipart/form-data>
+    Video File: <input type = "file" name = "video" /> <br>
+    UAV Logs: <input type = "file" name = "logs" /> <br>
+    <input type = "submit"/>
+</form>   
+{% endblock %}
