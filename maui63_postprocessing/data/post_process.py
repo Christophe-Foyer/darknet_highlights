@@ -25,21 +25,20 @@ import cv2
 class Maui63DataProcessor:
     
     def __init__(self,
-                 logs,
-                 media, 
-                 data_file, 
-                 config_file, 
-                 weights, 
-                 names_file,
-                 output_path = '__temp__',
-                 csv_output_path = None,
-                 tag_media = True,  # add boxes
-                 highlighter_kwargs = {},
-                 cv_kwargs = {},
-                 media_start_time = None,
-                 image_dir_fps = None,
-                 image_dir_timestamps = None,
-                 export_type: str = 'video',
+                 logs,                               # UAV Logs
+                 media,                              # media file  
+                 data_file,                          # darknet data file
+                 config_file,                        # darknet config file 
+                 weights,                            # darknet weights file
+                 names_file,                         # darknet names file
+                 output_path = '__temp__',           # processing output path
+                 csv_output_path = None,             # csv export path
+                 tag_media = True,                   # tag media with bboxes (y/n)
+                 highlighter_kwargs = {},            # highlighter arguments
+                 cv_kwargs = {},                     # cv arguments
+                 media_start_time = None,            # media start time (defaults to logs start)
+                 image_dir_fps = None,               # image directory FPS (for continuous)
+                 image_dir_timestamps: list = None,  # image directory timestamps (list)
                  ):
         
         if csv_output_path is not None:
@@ -74,12 +73,6 @@ class Maui63DataProcessor:
             "Input and output types must match (or dir for video highlights)" \
             + '\n\nOutput_type = {} | Media_type = {}'.format(
                 self._output_type, self._media_type)
-            
-        # For exporting to rvision
-        if export_type != None:
-            # assert self._output_type == 'dir'
-            assert export_type in ['video', 'image']
-            self.export_type = export_type
         
     def _get_filetype(self, file=None):
         """
@@ -215,6 +208,9 @@ class Maui63DataProcessor:
         return df
     
     def _get_detection_frame(self, timestamp):
+        """
+        Assumes timestamps are an exact match with those in the self.data Dataframe.
+        """
         
         if self._media_type == "video":
             # To avoid creating a clip object for just one frame
@@ -226,8 +222,11 @@ class Maui63DataProcessor:
             frame = clip.get_frame(timestamp)
 
         else:
-            # Doesn't support directories or single images yet
-            raise NotImplementedError("Directories and images not yet supported, please use video as input media.")
+            imgfile = self.data.loc[self.data['timestamp'] == timestamp]['filename']
+            
+            assert len(imgfile) > 0, "Couldn't find timestamp ({})".format(timestamp)
+            
+            frame = cv2.imread(imgfile[0])
         
         return frame
         
@@ -329,11 +328,7 @@ class Maui63DataProcessor:
         df = self._run_cv()
         
         if self._media_type == 'video' and self._output_extension == '':
-            if self.export_type == 'video':
-                # generate some highlights from the tempfile
-                df = self._generate_video_highlights(df_in = df)
-            if self.export_type == 'image':
-                raise NotImplementedError()
+            df = self._generate_video_highlights(df_in = df)
         
         self.data = df
         
@@ -424,10 +419,18 @@ class Maui63DataProcessor:
                        rvision_camera: str = None,
                        rvision_token: str = None,       # <camera token>
                        min_spacing: float = 30,    # Minimum spacing in seconds
+                       export_type = 'image',
                        ):
         
         assert ((rvision_camera != None and rvision_token != None) or
                 url != None), "Please specify the camera and token, or provide the full URL"
+
+        assert export_type in ['image', 'video'], \
+            "Invalid export_type, valid options are: ['image', 'video']"
+            
+        # TODO: Support video highlights
+        if export_type == 'video':
+            raise NotImplementedError()
         
         # TODO: Add warnings if you add multiple
         
@@ -540,5 +543,5 @@ if __name__ == '__main__':
     
     # pro.process()
     pro._load_processed_data(data_df_csv = '../../examples/__temp__.csv')
-    url = input('Rvision URL: ')
-    pro.export_rvision(url = url)
+    # url = input('Rvision URL: ')
+    # pro.export_rvision(url = url)
