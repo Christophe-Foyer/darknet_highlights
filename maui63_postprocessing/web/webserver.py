@@ -7,6 +7,7 @@ import threading
 
 from maui63_postprocessing import Maui63DataProcessor
 
+_filedirpath = Path(__file__).parent
 
 class UploadPage(Flask):
     
@@ -23,7 +24,11 @@ class UploadPage(Flask):
     processor_kwargs = {}
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        template_path = _filedirpath / 'templates/'
+        
+        super().__init__(*args, 
+                         template_folder=str(template_path),
+                         **kwargs)
         
         app = self
         
