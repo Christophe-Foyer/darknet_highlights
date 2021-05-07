@@ -56,7 +56,8 @@ setup(
         'opencv-python >= 4',
         'pandas >= 1',
         'filetype >= 1',
-        'flask >= 1.0.0'
+        'flask >= 1',
+        'moviepy >= 1'
     ],
     include_package_data=True,
     package_data={
