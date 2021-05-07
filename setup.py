@@ -53,7 +53,7 @@ setup(
     install_requires=[
         'numpy >= 1',
         'tqdm >= 1',
-        'opencv >= 3',
+        'opencv-python >= 3',
         'pandas >= 1',
         'filetype >= 1',
         'flask >= 1.0.0'
