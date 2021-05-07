@@ -89,7 +89,8 @@ class UploadPage(Flask):
                 
                 video = request.files['video']
                 logs = request.files['logs']
-                r_url = request.text['rvision_url']
+                
+                r_url = str(request.form['rvision_url'])
                 
                 # if user does not select file, browser also
                 # submit an empty part without filename
@@ -129,11 +130,14 @@ class UploadPage(Flask):
                     
                     flash("Processing complete")
                     
+                    # TODO: Catch exceptions here
+                    
                     # TODO: Add files to blob storage
                     pass
                     
-                except:
-                    flash('Something went wrong, please contact the software administrator.')
+                except Exception as e:
+                    flash('Something went wrong, please check the URL, or contact the software administrator:')
+                    flash(str(e))
                     return redirect(request.url)
             
             return render_template('upload.html', rvision_url=self.rvision_url)
