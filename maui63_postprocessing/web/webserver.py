@@ -105,11 +105,11 @@ class UploadPage(Flask):
                     return redirect(request.url)
                 
                 filename = secure_filename(video.filename)
-                videopath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                videopath = os.path.join(self.config['UPLOAD_FOLDER'], filename)
                 video.save(videopath)
                 
                 filename = secure_filename(logs.filename)
-                logspath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                logspath = os.path.join(self.config['UPLOAD_FOLDER'], filename)
                 logs.save(logspath)
                 
                 flash('Upload successful.')
