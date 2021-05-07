@@ -13,7 +13,8 @@ def set_backend(net):
                if len(ci) > 0 and re.search(r'(nvidia*:?)|(cuda*:)|(cudnn*:)', ci.lower()) is not None]
     cv_info = {x.split(':')[0]:x.split(':')[1].strip() for x in cv_info}
     
-    if "YES" in cv_info['NVIDIA CUDA'] and "YES" in cv_info['cuDNN']:
+    if 'NVIDIA CUDA' in cv_info.keys() and 'cuDNN' in cv_info.keys() and \
+            "YES" in cv_info['NVIDIA CUDA'] and "YES" in cv_info['cuDNN']:
         net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     else:
