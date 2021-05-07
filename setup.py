@@ -60,6 +60,7 @@ setup(
     ],
     include_package_data=True,
     package_data={
+        'html templates': ['web/templates/*.html'],
     },
     project_urls={  # Optional
     },
