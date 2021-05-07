@@ -57,7 +57,8 @@ setup(
         'pandas >= 1',
         'filetype >= 1',
         'flask >= 1',
-        'moviepy >= 1'
+        'moviepy >= 1',
+        'scipy >= 1',
     ],
     include_package_data=True,
     package_data={
