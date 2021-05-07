@@ -42,7 +42,7 @@ class UploadPage(Flask):
         
         super().run(*args, **kwargs)
     
-    def process_upload(self, uav_logs, media_file):
+    def process_upload(self, uav_logs, media_file, r_url):
         
         # TODO: Add option to offload to azure instance
         
@@ -50,13 +50,13 @@ class UploadPage(Flask):
         print(output_path)
         
         processor = Maui63DataProcessor(
-                uav_logs,       # CSV file for UAV data logs
-                media_file,     # video/image file or image folder
+                uav_logs,            # CSV file for UAV data logs
+                media_file,          # video/image file or image folder
                 self.data_file,      # darknet .data file
                 self.config_file,    # darknet .cfg file
                 self.weights_file,   # darknet .weights file
                 self.names_file,     # darknet .names file
-                output_path,     # ouput file/directory
+                output_path,         # ouput file/directory
                 highlighter_kwargs = self.highlighter_kwargs,
                 **self.processor_kwargs
                 )
@@ -65,7 +65,7 @@ class UploadPage(Flask):
         processor.process()
         
         # TODO: Add to rvision
-        processor.export_rvision(url = self.rvision_url, **self.export_kwargs)
+        processor.export_rvision(url = r_url, **self.export_kwargs)
             
     
     def _add_routes(self):
@@ -84,6 +84,8 @@ class UploadPage(Flask):
                 
                 video = request.files['video']
                 logs = request.files['logs']
+                r_url = request.text['rvision_url']
+                
                 # if user does not select file, browser also
                 # submit an empty part without filename
                 if video.filename == '':
@@ -91,6 +93,9 @@ class UploadPage(Flask):
                     return redirect(request.url)
                 if logs.filename == '':
                     flash('No selected file')
+                    return redirect(request.url)
+                if r_url == '':
+                    flash('No URL')
                     return redirect(request.url)
                 
                 filename = secure_filename(video.filename)
@@ -111,7 +116,7 @@ class UploadPage(Flask):
                     # Process the info in a thread (keeps things from hanging I think?)
                     thread = threading.Thread(
                         target=self.process_upload,
-                        args=(logspath, videopath)
+                        args=(logspath, videopath, r_url)
                         )
                     thread.start()
                     
@@ -124,9 +129,9 @@ class UploadPage(Flask):
                     
                 except:
                     flash('Something went wrong, please contact the software administrator.')
-                    raise
+                    return redirect(request.url)
             
-            return render_template('upload.html')
+            return render_template('upload.html', rvision_url=self.rvision_url)
 
 
 if __name__ == "__main__":
