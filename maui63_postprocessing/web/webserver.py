@@ -1,16 +1,16 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect, flash
 from werkzeug.utils import secure_filename
 import tempfile
 import os
 import sys
 from pathlib import Path
 from contextlib import redirect_stdout, redirect_stderr
-
 import threading
 from multiprocessing import Process, get_context
 from multiprocessing.queues import Queue
-
 from maui63_postprocessing import Maui63DataProcessor
+
+from flask_socketio import emit, SocketIO
 
 _filedirpath = Path(__file__).parent
 
@@ -44,9 +44,11 @@ class UploadPage(Flask):
 
     def __init__(self, *args, **kwargs):
         template_path = _filedirpath / 'templates/'
+        static_path = _filedirpath / 'static/'
         
         super().__init__(*args, 
                          template_folder=str(template_path),
+                         static_folder=str(static_path),
                          **kwargs)
         
         app = self
@@ -57,6 +59,8 @@ class UploadPage(Flask):
         app.config['SECRET_KEY'] = SECRET_KEY
         app.config['UPLOAD_FOLDER'] = str(self.UPLOAD_FOLDER.name)
         
+        self.socketio = SocketIO(app)
+        
         # Add the routes
         self._add_routes()
         
@@ -65,6 +69,13 @@ class UploadPage(Flask):
         assert self.rvision_url, "Please specify an rvision url. (UploadPage.rvision_url)"
         
         super().run(*args, **kwargs)
+        
+    def run_socketio(self, *args, **kwargs):
+        self.socketio.run(self, *args, **kwargs)
+        
+    def start_web(self, *args, **kwargs):
+        # Just an easy alias for whatever we want the user to start
+        self.run_socketio(self, *args, **kwargs)
     
     def process_upload(self, uav_logs, media_file, r_url):
         
@@ -135,6 +146,7 @@ class UploadPage(Flask):
             
             if stderr:
                 print(stderr)
+                self.socketio.emit('process_stdout', {'string': stderr}, namespace='/stdout_log')
             
             # Kill signal
             if output == '__STOP__':
@@ -144,6 +156,7 @@ class UploadPage(Flask):
             # process output
             if output:
                 print(output)
+                self.socketio.emit('process_stdout', {'string': output}, namespace='/stdout_log')
             
         self.child_process.join()
         self.child_process.close()
@@ -188,23 +201,25 @@ class UploadPage(Flask):
                 logspath = os.path.join(self.config['UPLOAD_FOLDER'], filename)
                 logs.save(logspath)
                 
-                flash('Upload successful.')
+                # flash('Upload successful.')
                 
                 # TODO: Add filetype checks
                                 
-                flash('Processing...')
+                # flash('Processing...')
                 
                 try:
                     # Process the info in a thread (keeps things from hanging I think?)
-                    thread = threading.Thread(
-                        target=self.process_upload,
-                        args=(logspath, videopath, r_url)
+                    # thread = threading.Thread(
+                    #     target=self.process_upload,
+                    #     args=(logspath, videopath, r_url)
+                    #     )
+                    # thread.start()
+                    self.socketio.start_background_task(
+                        self.process_upload, 
+                        *(logspath, videopath, r_url)
                         )
-                    thread.start()
                     
-                    thread.join()
-                    
-                    flash("Processing complete")
+                    # flash("Processing complete")
                     
                     # TODO: Catch exceptions here
                     
@@ -217,6 +232,15 @@ class UploadPage(Flask):
                     return redirect(request.url)
             
             return render_template('upload.html', rvision_url=self.rvision_url)
+            
+        @self.socketio.on('connect', namespace='/stdout_log')
+        def test_connect():
+            # need visibility of the global thread object
+            print('Client connected')
+
+        @self.socketio.on('disconnect', namespace='/stdout_log')
+        def test_disconnect():
+            print('Client disconnected')
 
 
 if __name__ == "__main__":
@@ -227,7 +251,7 @@ if __name__ == "__main__":
     app.rvision_url = "dummyurl"
     
     kwargs = {'host': '0.0.0.0', 'port': 8080, 'debug': False}
-    threading.Thread(target=app.run, 
+    threading.Thread(target=app.run_socketio, 
                       kwargs = kwargs
                       ).start()
     # app.run(**kwargs)

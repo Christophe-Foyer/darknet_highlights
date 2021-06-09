@@ -57,6 +57,8 @@ setup(
         'pandas >= 1',
         'filetype >= 1',
         'flask >= 1',
+        'flask-socketio >= 5, <=6',
+        'simple-websocket >= 0.2',
         'moviepy >= 1',
         'scipy >= 1',
         'rq >= 1',

@@ -1,4 +1,11 @@
 {% extends "layout.html" %}
+
+{% block head %}
+<script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js"></script>
+<script src="static/js/stdout_log.js"></script>
+{% endblock %}
+
 {% block body %}
 <p>Upload the video file and uav logs. The processed data will then be uploaded to rvision.</p>
 
@@ -8,4 +15,8 @@
     R/Vision URL: <input type="text" id="rvision_url" name="rvision_url" value={{rvision_url}}><br>
     <input type = "submit"/>
 </form>   
+
+<div id="stdout_log">
+</div>
+
 {% endblock %}
