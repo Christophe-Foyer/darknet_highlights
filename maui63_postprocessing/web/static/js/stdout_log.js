@@ -2,7 +2,7 @@
 $(document).ready(function(){
     //connect to the socket server.
     //var socket = io('/stdout_log');
-    var socket = io.connect('http://' + document.domain + ':' + location.port + '/stdout_log')
+    var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/stdout_log')
     var strings_received = [];
     
     socket.on('connect', function() {
