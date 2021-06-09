@@ -2,12 +2,31 @@ from flask import Flask, render_template, request, redirect, flash, url_for
 from werkzeug.utils import secure_filename
 import tempfile
 import os
+import sys
 from pathlib import Path
+from contextlib import redirect_stdout, redirect_stderr
+
 import threading
+from multiprocessing import Process, get_context
+from multiprocessing.queues import Queue
 
 from maui63_postprocessing import Maui63DataProcessor
 
 _filedirpath = Path(__file__).parent
+
+
+class StdoutQueue(Queue):
+    def __init__(self, *args, **kwargs):
+        self.block = kwargs.get('block')
+        self.timeout = kwargs.get('timeout')
+        super().__init__(*args, ctx = get_context(), **kwargs)
+        
+    def write(self, msg):
+        self.put(msg)
+        
+    def flush(self):
+        sys.__stdout__.flush()
+
 
 class UploadPage(Flask):
     
@@ -51,26 +70,83 @@ class UploadPage(Flask):
         
         # TODO: Add option to offload to azure instance
         
+        # TODO: add support for multiple uploads (this will break if two people upload at the same time)
         output_path = self.config['UPLOAD_FOLDER'] + '/output.mp4'
-        print(output_path)
         
-        processor = Maui63DataProcessor(
-                uav_logs,            # CSV file for UAV data logs
-                media_file,          # video/image file or image folder
-                self.data_file,      # darknet .data file
-                self.config_file,    # darknet .cfg file
-                self.weights_file,   # darknet .weights file
-                self.names_file,     # darknet .names file
-                output_path,         # ouput file/directory
-                highlighter_kwargs = self.highlighter_kwargs,
-                **self.processor_kwargs
-                )
+        def process(stdout_queue, stderr_queue):
+            
+            # redirect stdout
+            with redirect_stdout(stdout_queue), redirect_stderr(stderr_queue):
+                # sys.stdout = sys.__stdout__
                 
-        # Run the process routine
-        processor.process()
+                try:
+                    print('Processing...')
+                    
+                    processor = Maui63DataProcessor(
+                            uav_logs,            # CSV file for UAV data logs
+                            media_file,          # video/image file or image folder
+                            self.data_file,      # darknet .data file
+                            self.config_file,    # darknet .cfg file
+                            self.weights_file,   # darknet .weights file
+                            self.names_file,     # darknet .names file
+                            output_path,         # ouput file/directory
+                            highlighter_kwargs = self.highlighter_kwargs,
+                            **self.processor_kwargs
+                            )
+                            
+                    # Run the process routine
+                    processor.process()
+                    
+                    print('Exporting...')
+                    
+                    # TODO: Add to rvision
+                    processor.export_rvision(url = r_url, **self.export_kwargs)
+                
+                    print('Done!')
+                    
+                except Exception as e:
+                    print(e)
+                
+            # Lazy way of passing the state through the queue
+            print('__STOP__')
         
-        # TODO: Add to rvision
-        processor.export_rvision(url = r_url, **self.export_kwargs)
+        # queue to catch standard output from subprocess
+        stdout_queue = StdoutQueue()
+        stderr_queue = StdoutQueue()
+        self.queue_stdoud = stdout_queue
+        
+        # create a subprocess
+        self.child_process = Process(target=process, args=(stdout_queue, stderr_queue,))
+        self.child_process.start()
+        
+        print('Starting task...')
+        
+        # catch the various process outputs
+        while True:
+            try:
+                output = stdout_queue.get_nowait()
+            except:
+                output = None
+            
+            try:                
+                stderr = stderr_queue.get_nowait()
+            except:
+                stderr = None
+            
+            if stderr:
+                print(stderr)
+            
+            # Kill signal
+            if output == '__STOP__':
+                print('STOP')
+                break
+            
+            # process output
+            if output:
+                print(output)
+            
+        self.child_process.join()
+        self.child_process.close()
             
     
     def _add_routes(self):
@@ -150,8 +226,8 @@ if __name__ == "__main__":
     app = UploadPage(__name__)
     app.rvision_url = "dummyurl"
     
+    kwargs = {'host': '0.0.0.0', 'port': 8080, 'debug': False}
     threading.Thread(target=app.run, 
-                     kwargs = {'host': '0.0.0.0',
-                               'port': 8080,
-                               'debug': False}
-                     ).start()
+                      kwargs = kwargs
+                      ).start()
+    # app.run(**kwargs)
