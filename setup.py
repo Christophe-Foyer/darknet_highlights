@@ -31,6 +31,14 @@ def get_version(rel_path):
             return line.split(delim)[1]
     else:
         raise RuntimeError("Unable to find version string.")
+        
+        
+def get_opencv_version():
+    try:
+        import cv2
+        return cv2.__version__
+    except Exception:
+        return None
 
 
 ### Do the setup
@@ -53,7 +61,6 @@ setup(
     install_requires=[
         'numpy >= 1',
         'tqdm >= 1',
-        'opencv-python >= 4',
         'pandas >= 1',
         'filetype >= 1',
         'flask >= 1',
@@ -62,6 +69,13 @@ setup(
         'moviepy >= 1',
         'scipy >= 1',
         'rq >= 1',
+        
+        # Opencv is a bit tricky
+        ('opencv-python >= 4' 
+         if (get_opencv_version() is None
+             or float(get_opencv_version().split('.')[0]) < 4)
+         else ''
+         ),
     ],
     include_package_data=True,
     package_data={
